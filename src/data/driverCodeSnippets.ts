@@ -706,5 +706,27 @@ Total Photonic Per-Token Latency : 1.25 microseconds
 Baseline Electronic GPU (B200)   : 14.80 microseconds
 SPEEDUP FACTOR                   : 11.84x FASTER
 DRAM Read Traffic Saved          : 256.0 GB/s per token
-Optical Energy Efficiency        : 44.2 TOPS / Watt (Electronic GPU: 3.8 TOPS/W)`
+Optical Energy Efficiency        : 44.2 TOPS / Watt (Electronic GPU: 3.8 TOPS/W)`,
+
+  'kimi-regmap': `[KIMI-PAU BAR0 MMIO HARDWARE REGISTER DUMP]
+Base Physical: 0x0000000038000000 | Linux VMA: 0xffff800012340000
+Offset  | C++ Pointer Index | Register Name            | Access | Value (Hex) | Decoded Status
+--------+-------------------+--------------------------+--------+-------------+------------------------------------
+0x0000  | mmio_regs_[0]     | PAU_MAGIC_SIGNATURE      | RO     | 0x4B335041  | ASCII "K3PA" (Silicon Verified)
+0x0004  | mmio_regs_[1]     | PAU_CHIP_REVISION        | RO     | 0x00030100  | v3.1.0 Monolithic Tapeout
+0x0008  | mmio_regs_[2]     | PAU_IRQ_STATUS           | RW1C   | 0x00000000  | Idle (No Pending IRQs)
+0x0010  | mmio_regs_[4]     | PAU_CTRL_LASER           | RW     | 0x00000003  | Laser EN=1, 64-WDM Grid=1
+0x0018  | mmio_regs_[6]     | PAU_LASER_POWER_DBM      | RW     | 0x000002EE  | Target: +7.50 dBm / Carrier
+0x0020  | mmio_regs_[8]     | PAU_THERMAL_PLL_CTRL     | RW     | 0x00000001  | Micro-Heater Closed-Loop EN=1
+0x0024  | mmio_regs_[9]     | PAU_THERMAL_PLL_STATUS   | RO     | 0x00003303  | PLL Locked, Margin OK, Duty 20%
+0x0030  | mmio_regs_[12]    | PAU_PCM_MATRIX_ID        | RW     | 0x00000064  | Target: Matrix ID 100 (Router)
+0x0038  | mmio_regs_[14]    | PAU_PCM_LOSS_METRIC      | RO     | 0x00003778  | Extinction Dynamic Range: 14.20 dB
+0x0040  | mmio_regs_[16]    | PAU_DISPATCH_MATRIX      | RW     | 0x00000064  | Active Optical Matrix: 100
+0x0044  | mmio_regs_[17]    | PAU_DISPATCH_BATCH       | RW     | 0x00000010  | Batch Size: 16 tokens
+0x0048  | mmio_regs_[18]    | PAU_DISPATCH_DIM_IN      | RW     | 0x00002000  | Hidden Dimension K: 8192
+0x004C  | mmio_regs_[19]    | PAU_DISPATCH_DIM_OUT     | RW     | 0x00003800  | Projection Dimension N: 14336
+0x0050  | mmio_regs_[20]    | PAU_DOORBELL_START       | WO     | 0x00000000  | Ready for Sub-ns GEMM Pulse
+0x0080  | mmio_regs_[32]    | PAU_TELEMETRY_TEMP       | RO     | 0x000001A2  | Optical Die Temp: 41.8°C
+0x0084  | mmio_regs_[33]    | PAU_TELEMETRY_OSNR       | RO     | 0x0000017C  | WDM Comb OSNR: 38.0 dB
+0x0090  | mmio_regs_[36]    | PAU_TELEMETRY_MAC_OPS    | RO     | 0x008CA000  | Total Optical MACs: 9,216,000`
 };

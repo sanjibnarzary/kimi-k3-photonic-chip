@@ -1,0 +1,80 @@
+// =============================================================================
+// Project: Kimi-PAU K3-X1 Silicon Photonics Acceleration Unit
+// Model:   optical_mrm_model
+// File:    optical_mrm_model.va
+// Language: Verilog-A (IEEE 1364-2001 Analog / Cadence Spectre / PrimeSim)
+// Purpose: Electro-optic micro-ring modulator compact behavioral model with
+//          carrier-depletion modulation, thermo-optic shift, and PAM4 voltage response.
+// =============================================================================
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module optical_mrm_model(opt_in_p, opt_in_n, opt_out_p, opt_out_n, v_drive, v_heater);
+    // Optical I/O ports (real/imag optical field)
+    inout opt_in_p, opt_in_n;
+    inout opt_out_p, opt_out_n;
+    electrical opt_in_p, opt_in_n;
+    electrical opt_out_p, opt_out_n;
+
+    // Electrical control ports
+    input v_drive, v_heater;
+    electrical v_drive, v_heater;
+
+    // Physical Parameters for Silicon Microring
+    parameter real radius_um       = 7.5;              // Ring radius (7.5 um)
+    parameter real lambda0_nm      = 1550.12;          // Nominal resonance wavelength
+    parameter real ng              = 3.85;             // Group index of Si waveguide
+    parameter real neff0           = 2.45;             // Effective index at 1550 nm
+    parameter real self_coupling   = 0.985;            // Ring transmission coefficient r
+    parameter real round_trip_loss = 0.992;            // Round-trip field transmission a
+    parameter real kv_mod          = 2.8e-5;           // Carrier-depletion index shift (dneff/dV)
+    parameter real dndT            = 1.86e-4;          // Thermo-optic coefficient (1/K)
+    parameter real r_heater_ohm    = 85.0;             // On-chip Ti/Pt microheater resistance
+    parameter real rth_heater_k_w  = 2200.0;           // Thermal resistance (K/Watt)
+
+    real v_d, v_h;
+    real p_heat, delta_temp;
+    real delta_neff_elec, delta_neff_therm, total_neff;
+    real l_cavity, phi_rt;
+    real trans_power, trans_field;
+
+    analog begin
+        // Read terminal electrical voltages
+        v_d = V(v_drive);
+        v_h = V(v_heater);
+
+        // Calculate Joule heating & temperature elevation
+        p_heat = (v_h * v_h) / r_heater_ohm;
+        delta_temp = p_heat * rth_heater_k_w;
+
+        // Electro-optic carrier-depletion shift (reverse biased PN junction)
+        if (v_d < 0.0)
+            delta_neff_elec = kv_mod * v_d;
+        else
+            delta_neff_elec = 0.0;
+
+        // Thermo-optic refractive index shift
+        delta_neff_therm = dndT * delta_temp;
+
+        // Total effective refractive index
+        total_neff = neff0 + delta_neff_elec + delta_neff_therm;
+
+        // Round-trip cavity phase shift: phi = (2 * pi / lambda) * total_neff * L
+        l_cavity = 2.0 * `M_PI * (radius_um * 1e-6);
+        phi_rt = (2.0 * `M_PI / (lambda0_nm * 1e-9)) * total_neff * l_cavity;
+
+        // Symmetric Microring Resonator Power Transfer Function:
+        // T(phi) = (r^2 - 2*r*a*cos(phi) + a^2) / (1 - 2*r*a*cos(phi) + (r*a)^2)
+        trans_power = (pow(self_coupling, 2) - 2.0 * self_coupling * round_trip_loss * cos(phi_rt) + pow(round_trip_loss, 2)) /
+                      (1.0 - 2.0 * self_coupling * round_trip_loss * cos(phi_rt) + pow(self_coupling * round_trip_loss, 2));
+
+        if (trans_power < 1e-6) trans_power = 1e-6;
+        if (trans_power > 1.0)  trans_power = 1.0;
+
+        trans_field = sqrt(trans_power);
+
+        // Modulate optical field
+        V(opt_out_p, opt_out_n) <+ trans_field * V(opt_in_p, opt_in_n);
+    end
+endmodule

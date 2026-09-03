@@ -1,0 +1,60 @@
+// =============================================================================
+// Project: Kimi-PAU K3-X1 Silicon Photonics Acceleration Unit
+// Model:   pcm_optical_cell
+// File:    pcm_optical_cell.va
+// Language: Verilog-A (IEEE 1364-2001 Analog / Cadence Spectre / PrimeSim)
+// Purpose: Multi-level non-volatile Phase Change Material (Sb2Se3 / GST)
+//          in-memory optical weight element.
+// =============================================================================
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module pcm_optical_cell(opt_in_p, opt_in_n, opt_out_p, opt_out_n, pcm_prog_v, pcm_gnd);
+    inout opt_in_p, opt_in_n;
+    inout opt_out_p, opt_out_n;
+    electrical opt_in_p, opt_in_n;
+    electrical opt_out_p, opt_out_n;
+
+    inout pcm_prog_v, pcm_gnd;
+    electrical pcm_prog_v, pcm_gnd;
+
+    // Optical constants for Sb2Se3 at 1550 nm
+    parameter real n_amorph   = 3.32;      // Amorphous refractive index
+    parameter real k_amorph   = 1.0e-5;    // Ultra-low amorphous extinction coefficient (lossless)
+    parameter real n_cryst    = 4.15;      // Crystalline refractive index
+    parameter real k_cryst    = 0.085;     // Crystalline extinction coefficient
+    parameter real cell_len_um= 12.5;      // PCM cell length along waveguide
+    parameter real lambda0_nm = 1550.0;    // Optical wavelength
+
+    // Internal state: Crystallization fraction chi in [0.0, 1.0]
+    real chi_cryst;
+    real v_pulse, delta_t;
+    real neff_eff, kappa_eff;
+    real atten_db, atten_linear, phase_shift_rad;
+
+    analog begin
+        v_pulse = V(pcm_prog_v, pcm_gnd);
+
+        // Electro-thermal phase transition threshold logic
+        if (v_pulse > 1.5) begin
+            // Melt-quench amorphization: resets crystallization to 0
+            chi_cryst = 0.0;
+        end else if (v_pulse > 0.8 && v_pulse < 1.3) begin
+            // Annealing crystallization pulse
+            chi_cryst = chi_cryst + 0.15;
+            if (chi_cryst > 1.0) chi_cryst = 1.0;
+        end
+
+        // Effective index mixture by effective medium theory (Lorentz-Lorenz)
+        neff_eff  = n_amorph + (n_cryst - n_amorph) * chi_cryst;
+        kappa_eff = k_amorph + (k_cryst - k_amorph) * chi_cryst;
+
+        // Optical propagation phase shift & transmission attenuation
+        phase_shift_rad = (2.0 * `M_PI / (lambda0_nm * 1e-9)) * neff_eff * (cell_len_um * 1e-6);
+        atten_linear    = exp(- (4.0 * `M_PI * kappa_eff / (lambda0_nm * 1e-9)) * (cell_len_um * 1e-6));
+
+        // Output modulated optical field (in-memory multiplied matrix weight)
+        V(opt_out_p, opt_out_n) <+ atten_linear * V(opt_in_p, opt_in_n);
+    end
+endmodule

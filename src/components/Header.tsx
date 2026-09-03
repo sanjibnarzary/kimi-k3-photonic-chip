@@ -9,13 +9,14 @@ import {
   ShieldCheck, 
   Radio, 
   Flame,
-  Gauge
+  Gauge,
+  FileCode
 } from 'lucide-react';
 import { SimulationMetrics } from '../types/photonic';
 
 interface HeaderProps {
-  activeTab: 'floorplan' | 'simulator' | 'loss' | 'driver' | 'docs';
-  setActiveTab: (tab: 'floorplan' | 'simulator' | 'loss' | 'driver' | 'docs') => void;
+  activeTab: 'floorplan' | 'simulator' | 'loss' | 'driver' | 'eda' | 'docs';
+  setActiveTab: (tab: 'floorplan' | 'simulator' | 'loss' | 'driver' | 'eda' | 'docs') => void;
   metrics: SimulationMetrics;
   thermalLocked: boolean;
 }
@@ -133,6 +134,19 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Radio className="w-4 h-4" />
             <span>Loss Budget &amp; Link Margin</span>
+          </button>
+
+          <button
+            id="tab-eda"
+            onClick={() => setActiveTab('eda')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${
+              activeTab === 'eda'
+                ? 'bg-cyan-500/15 text-cyan-400 border-b-2 border-cyan-400'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+            }`}
+          >
+            <FileCode className="w-4 h-4" />
+            <span>EDA &amp; Verilog Tapeout</span>
           </button>
 
           <button

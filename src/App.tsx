@@ -12,10 +12,11 @@ import { OpticalGemmSimulator } from './components/OpticalGemmSimulator';
 import { LossBudgetCalculator } from './components/LossBudgetCalculator';
 import { DriverWorkbench } from './components/DriverWorkbench';
 import { ArchitectureWhitepaper } from './components/ArchitectureWhitepaper';
+import { EdaTapeoutStudio } from './components/EdaTapeoutStudio';
 import { Radio, ShieldCheck, Terminal, Cpu, BookOpen, Layers } from 'lucide-react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'floorplan' | 'simulator' | 'loss' | 'driver' | 'docs'>('simulator');
+  const [activeTab, setActiveTab] = useState<'floorplan' | 'simulator' | 'loss' | 'driver' | 'eda' | 'docs'>('simulator');
   
   const [simulationState, setSimulationState] = useState<SimulationState>({
     batchSize: 16,
@@ -64,6 +65,7 @@ export default function App() {
             metrics={metrics}
           />
         )}
+        {activeTab === 'eda' && <EdaTapeoutStudio />}
         {activeTab === 'driver' && <DriverWorkbench />}
         {activeTab === 'docs' && <ArchitectureWhitepaper />}
       </main>

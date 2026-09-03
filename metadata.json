@@ -1,0 +1,6 @@
+{
+  "name": "Kimi K3 Photonic Chip Architecture & Driver Workbench",
+  "description": "Silicon photonics accelerator design for Kimi K3 LLM inference with hardware-stored non-volatile optical weights, high-bandwidth optical interconnects, low-latency WDM matrix computing, optical loss budget simulator, and comprehensive C++/Kernel driver suite.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
